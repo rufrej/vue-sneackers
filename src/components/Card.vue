@@ -12,17 +12,6 @@ const props = defineProps({
     onClickFavorite: Function,
 })
 
-// const addToFavorite = inject('addToFavorite')
-
-// const onClickFavorite = () => {
-//     const object = {
-//         ...props,
-//         parentId: props.id,
-//     }
-
-//     addToFavorite(object)
-// }
-
 </script>
 
 <template>

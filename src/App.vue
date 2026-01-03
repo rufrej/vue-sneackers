@@ -1,18 +1,39 @@
 <script setup>
 
-import { onMounted, provide, reactive, ref, watch } from 'vue';
+import { computed, onMounted, provide, reactive, ref, watch } from 'vue';
 import axios from 'axios';
 import CardsList from './components/CardsList.vue';
 import Drawer from './components/Drawer.vue';
 import Header from './components/Header.vue';
 
 const items = ref([])
+const drawer = ref([])
+const isCreatingOrder = ref(false)
+
+const drawerOpen = ref(false)
+
+const totalPrice = computed(
+    () => Math.floor(drawer.value.reduce((acc, item) => acc + item.price, 0) / 30)
+)
+
+const vatPrice = computed(
+    () => Math.round(totalPrice.value * 5) / 100
+)
+
+// const drawerButtonDisable = computed(() =>
+//     props.isCreatingOrder ? true : props.totalPrice ? false : true)
 
 const filters = reactive({
     sortBy: 'title',
     searchQuery: '',
 })
 
+const openDrawer = () => {
+    drawerOpen.value = true
+}
+const closeDrawer = () => {
+    drawerOpen.value = false
+}
 
 const onChangeSelect = (event) => {
     filters.sortBy = event.target.value
@@ -100,21 +121,88 @@ const addToFavorite = async (item) => {
 
 }
 
+const addToDrawer = (item) => {
+
+    drawer.value.push(item)
+    item.isAdded = true
+
+}
+const removeFromDrawer = (item) => {
+    drawer.value.splice(drawer.value.indexOf(item), 1)
+    item.isAdded = false
+}
+
+const createOrder = async () => {
+    try {
+        isCreatingOrder.value = true
+        const { data } = await axios.post('https://e2a9ee0d546589a2.mokky.dev/orders', {
+            items: drawer.value,
+            totalPrice: totalPrice.value
+        })
+        drawer.value = []
+        return data
+    } catch (err) {
+        console.error(err)
+    } finally {
+        isCreatingOrder.value = false
+    }
+}
+
+const onClickAddPlus = (item) => {
+    if (!item.isAdded) {
+        addToDrawer(item)
+    } else {
+        removeFromDrawer(item)
+    }
+}
+
+
+
 onMounted(async () => {
+    const locarDrawer = localStorage.getItem('drawer')
+    drawer.value = locarDrawer ? JSON.parse(locarDrawer) : [];
+
+
     await fetchItems()
     await fetchFavorites()
+
+    items.value = items.value.map((item) => ({
+        ...item,
+        isAdded: drawer.value.some((cartItem) => cartItem.id === item.id)
+    }))
 
 })
 
 watch(filters, fetchItems)
-provide('addToFavorite', addToFavorite)
+
+watch(drawer, () => {
+    items.value = items.value.map((item) => ({
+        ...item,
+        isAdded: false
+    }))
+})
+watch(drawer, () => {
+    localStorage.setItem('drawer', JSON.stringify(drawer.value))
+},
+    { deep: true })
+
+
+provide('drawer', {
+    drawer,
+    closeDrawer,
+    openDrawer,
+    addToDrawer,
+    removeFromDrawer,
+
+})
 
 </script>
 <template>
-    <!-- <Drawer /> -->
+    <Drawer v-if="drawerOpen" :total-price="totalPrice" :vat-price="vatPrice" @create-order="createOrder"
+        :is-creating-order="isCreatingOrder.value" />
 
     <div class="w-4/5 bg-white m-auto  rounded-xl shadow-2xl mt-14">
-        <Header />
+        <Header :total-price="totalPrice" @open-drawer="openDrawer" />
 
 
         <div class="p-10">
@@ -138,7 +226,7 @@ provide('addToFavorite', addToFavorite)
 
                 </div>
             </div>
-            <CardsList :items="items" @addToFavorite="addToFavorite" />
+            <CardsList :items="items" @add-to-favorite="addToFavorite" @add-to-drawer="onClickAddPlus" />
         </div>
     </div>
 
