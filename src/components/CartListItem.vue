@@ -10,7 +10,7 @@ const { drawer, removeFromDrawer } = inject('drawer')
 
 <template>
 
-    <div class="flex flex-col gap-4 justify-beetween">
+    <div class="flex flex-col gap-4 justify-beetween" v-auto-animate>
         <CartItem v-for="item in drawer" :key="item.id" :title="item.title" :price="item.price"
             :image-url="item.imageUrl" @on-click-remove="() => removeFromDrawer(item)" />
     </div>

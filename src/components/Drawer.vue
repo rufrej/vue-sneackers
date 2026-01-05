@@ -1,11 +1,13 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
 import CartItem from './CartItem.vue';
 import CartListItem from './CartListItem.vue';
 import DrawerHeader from './DrawerHeader.vue';
 import InfoBlock from './InfoBlock.vue';
 
 const emit = defineEmits(['createOrder'])
+
+const { closeDrawer } = inject('drawer')
 
 const props = defineProps({
     totalPrice: Number,
@@ -19,7 +21,8 @@ const buttonDisable = computed(() => props.isCreatingOrder ? true : props.totalP
 
 <template>
 
-    <div class="fixed top-0 left-0 h-full w-full bg-black z-10 opacity-70"></div>
+    <div @click="closeDrawer" class="fixed top-0 left-0 h-full w-full bg-black z-10 opacity-70">
+    </div>
 
     <div class="bg-white w-96 h-full fixed right-0 top-0 z-20 p-8">
 
