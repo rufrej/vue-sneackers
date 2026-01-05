@@ -1,22 +1,43 @@
 <script setup>
-import { computed, inject } from 'vue';
+import { computed, inject, provide, ref } from 'vue';
+import axios from 'axios';
 import CartItem from './CartItem.vue';
 import CartListItem from './CartListItem.vue';
 import DrawerHeader from './DrawerHeader.vue';
 import InfoBlock from './InfoBlock.vue';
 
-const emit = defineEmits(['createOrder'])
 
-const { closeDrawer } = inject('drawer')
 
 const props = defineProps({
     totalPrice: Number,
     vatPrice: Number,
-    isCreatingOrder: Boolean
+
 
 })
 
-const buttonDisable = computed(() => props.isCreatingOrder ? true : props.totalPrice ? false : true)
+const { drawer, closeDrawer } = inject('drawer')
+
+const isCreating = ref(false)
+const orderId = ref(null)
+
+const createOrder = async () => {
+    try {
+        isCreating.value = true
+        const { data } = await axios.post('https://e2a9ee0d546589a2.mokky.dev/orders', {
+            items: drawer.value,
+            totalPrice: props.totalPrice.value
+        })
+        drawer.value = []
+        orderId.value = data.id
+    } catch (err) {
+        console.error(err)
+    } finally {
+        isCreating.value = false
+    }
+}
+const drawerIsEmpty = computed(() => drawer.value.length === 0)
+
+const buttonDisable = computed(() => props.isCreating ? true : props.totalPrice ? false : true)
 </script>
 
 <template>
@@ -28,9 +49,18 @@ const buttonDisable = computed(() => props.isCreatingOrder ? true : props.totalP
 
         <DrawerHeader />
 
-        <div v-if="!totalPrice" class="flex h-full items-center">
-            <InfoBlock title="Корзина пуста" description="Добавьте хотя бы одну пару кроссовок, что-бы сделать заказ"
+        <!-- <div v-if="!totalPrice" class="flex h-full items-center"> -->
+
+        <!-- </div> -->
+
+        <div v-if="!totalPrice || orderId" class="flex h-full items-center">
+            <InfoBlock v-if="!totalPrice && !orderId" title="Корзина пуста"
+                description="Добавьте хотя бы одну пару кроссовок, что-бы сделать заказ"
                 -image-url="/package-icon.png" />
+
+            <InfoBlock v-if="orderId" title="Заказ оформлен!"
+                :description="`Ваш заказ #${orderId} скоро будет передан курьерской доставке`"
+                -image-url="/order-success-icon.png" />
         </div>
 
 
@@ -49,7 +79,7 @@ const buttonDisable = computed(() => props.isCreatingOrder ? true : props.totalP
                     <div class="flex-1 border-b border-slate-200"></div>
                     <b>{{ vatPrice }} BYN</b>
                 </div>
-                <button type="button" :disabled="buttonDisable" @click="() => emit('createOrder')"
+                <button type="button" :disabled="buttonDisable" @click="createOrder"
                     class="mt-4 cursor-pointer bg-lime-500 w-full rounded-xl py-3 text-white disabled:bg-slate-400 hover:bg-lime-600 transition active:bg-lime-700">
                     Оформить заказ
                 </button>

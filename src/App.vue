@@ -1,17 +1,15 @@
 <script setup>
 
 import { computed, provide, ref, watch } from 'vue';
-import axios from 'axios';
+
 
 import Drawer from './components/Drawer.vue';
 import Header from './components/Header.vue';
-import Home from './pages/Home.vue';
-
 
 
 const drawer = ref([])
-const isCreatingOrder = ref(false)
-const body = ref(null)
+
+
 const drawerOpen = ref(false)
 
 const totalPrice = computed(
@@ -22,10 +20,6 @@ const vatPrice = computed(
     () => Math.round(totalPrice.value * 5) / 100
 )
 
-// const drawerButtonDisable = computed(() =>
-//     props.isCreatingOrder ? true : props.totalPrice ? false : true)
-
-
 
 const openDrawer = () => {
     drawerOpen.value = true
@@ -33,10 +27,6 @@ const openDrawer = () => {
 const closeDrawer = () => {
     drawerOpen.value = false
 }
-
-
-
-
 
 const addToDrawer = (item) => {
 
@@ -49,34 +39,12 @@ const removeFromDrawer = (item) => {
     item.isAdded = false
 }
 
-const createOrder = async () => {
-    try {
-        isCreatingOrder.value = true
-        const { data } = await axios.post('https://e2a9ee0d546589a2.mokky.dev/orders', {
-            items: drawer.value,
-            totalPrice: totalPrice.value
-        })
-        drawer.value = []
-        return data
-    } catch (err) {
-        console.error(err)
-    } finally {
-        isCreatingOrder.value = false
-    }
-}
-
-
-
-
-
-
 
 
 watch(drawer, () => {
     localStorage.setItem('drawer', JSON.stringify(drawer.value))
 },
     { deep: true })
-
 
 provide('drawer', {
     drawer,
@@ -89,23 +57,13 @@ provide('drawer', {
 
 </script>
 <template>
-    <Drawer v-if="drawerOpen" :total-price="totalPrice" :vat-price="vatPrice" @create-order="createOrder"
-        :is-creating-order="isCreatingOrder.value" />
+    <Drawer v-if="drawerOpen" :total-price="totalPrice" :vat-price="vatPrice" />
 
     <div class="w-4/5 bg-white m-auto  rounded-xl shadow-2xl mt-14">
         <Header :total-price="totalPrice" @open-drawer="openDrawer" />
-
-
         <div class="p-10">
-
-            <router-view>
-
-            </router-view>
+            <router-view></router-view>
         </div>
     </div>
-
-
-
 </template>
-
 <style scoped></style>
