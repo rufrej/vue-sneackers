@@ -76,7 +76,7 @@ const addToFavorite = async (item) => {
 
     try {
         if (!item.isFavorite) {
-            console.warn(item)
+
             const object = {
 
                 item_id: item.id,
@@ -140,12 +140,13 @@ watch(filters, fetchItems)
 </script>
 
 <template>
-    <div class="flex justify-between items-center mb-8">
-        <h2 class="text-3xl font-bold">Все Кроссовки</h2>
+    <div class="flex justify-between items-center mb-8 flex-col md:flex-row">
+        <h2 class="text-2xl mb-2 font-bold md:text-3xl">Все Кроссовки</h2>
 
         <div class="flex gap-4">
 
-            <select @change="onChangeSelect" name="" id="" class="py-2 px-3 border rounded-md outline-none">
+            <select @change="onChangeSelect" name="sort" id="sort"
+                class="w-40 py-2 px-3 border rounded-md outline-none">
                 <option value="name">По названию</option>
                 <option value="price">По цене(дешевые)</option>
                 <option value="-price">По цене(дорогие)</option>
@@ -155,7 +156,7 @@ watch(filters, fetchItems)
             <div class="relative">
                 <img class="absolute left-5 top-3" src="/search.svg" alt="search">
                 <input @input="onChangeSearchInput" type="text" placeholder="Поиск"
-                    class="border border-gray-200 rounded-md py-2 pl-11 pr-4 outline-none focus:border-gray-800">
+                    class=" w-40 border border-gray-200 rounded-md py-2 pl-11 pr-4 outline-none focus:border-gray-800">
             </div>
 
         </div>

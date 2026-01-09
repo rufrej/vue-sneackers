@@ -59,7 +59,7 @@ provide('drawer', {
 <template>
     <Drawer v-if="drawerOpen" :total-price="totalPrice" :vat-price="vatPrice" />
 
-    <div class="w-4/5 bg-white m-auto  rounded-xl shadow-2xl mt-14">
+    <div class=" bg-white m-auto  rounded-xl shadow-2xl md:mt-14,w-4/5">
         <Header :total-price="totalPrice" @open-drawer="openDrawer" />
         <div class="p-10">
             <router-view></router-view>
